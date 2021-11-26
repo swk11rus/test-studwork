@@ -1,0 +1,46 @@
+version: '3.2'
+
+services:
+
+  frontend:
+    build: frontend
+    ports:
+      - 30181:80
+    volumes:
+      # Re-use local composer cache via host-volume
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      # Mount source-code for development
+      - ./:/app
+    networks:
+      api_network:
+
+  api:
+    build: api
+    ports:
+      - 30180:80
+    volumes:
+      # Re-use local composer cache via host-volume
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      # Mount source-code for development
+      - ./:/app
+    networks:
+      api_network:
+
+  pgsql-api:
+    image: postgres:13.3
+    ports:
+      - 35432:5432
+    environment:
+      - POSTGRES_DB=api
+      - POSTGRES_USER=api
+      - POSTGRES_PASSWORD=api
+    volumes:
+      - pgsql-sock:/var/run/postgresql
+    networks:
+      api_network:
+
+volumes:
+  pgsql-sock:
+
+networks:
+  api_network:
